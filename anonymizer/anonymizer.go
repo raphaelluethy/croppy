@@ -8,17 +8,67 @@ import (
 	"image/jpeg"
 	"image/png"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
+
+	"github.com/google/uuid"
 )
 
 var outPath = "./output/"
+var tempPath = "./temp/"
+var fps = 25
 
-func RunAnonymize(fileMap map[string][]string, topCrop int, rightCrop int, bottomCrop int, leftCrop int) {
+func RunAnonymizeImages(fileMap map[string][]string, topCrop int, rightCrop int, bottomCrop int, leftCrop int) {
 	for path, files := range fileMap {
 		for _, file := range files {
 			anonymizeImage(path, file, topCrop, rightCrop, bottomCrop, leftCrop)
 		}
+	}
+}
+
+func RunAnonymizeVideos(fileMap map[string][]string, topCrop int, rightCrop int, bottomCrop int, leftCrop int) {
+	for path, files := range fileMap {
+		for _, file := range files {
+			randomName, err := splitVideo(path)
+			if err != nil {
+				fmt.Println("Error:", err)
+				return
+			}
+			anonymizeImage(tempPath+randomName, file, topCrop, rightCrop, bottomCrop, leftCrop)
+			repackVideo(randomName, file)
+		}
+	}
+}
+
+func splitVideo(path string) (string, error) {
+	randomName := uuid.New().String()
+	os.MkdirAll(tempPath+randomName, 0755)
+	// Output path for images, using a pattern
+	outputPattern := tempPath + "_frame_%03d.png"
+	// Frame rate (1 frame per second)
+	frameRate := "1"
+
+	// Build the ffmpeg command
+	cmd := exec.Command("ffmpeg", "-i", path, "-vf", "fps="+frameRate, outputPattern)
+
+	// Run the command
+	err := cmd.Run()
+	if err != nil {
+		fmt.Println("Error:", err)
+		return "", err
+	}
+
+	return randomName, nil
+}
+
+func repackVideo(randomName string, file string) {
+	cmd := exec.Command("ffmpeg", "-i", tempPath+randomName+"_%03d.png", "-c:v", "libx264", "-vf", "fps="+strconv.Itoa(fps), "-pix_fmt", "yuv420p", outPath+file)
+	err := cmd.Run()
+	if err != nil {
+		fmt.Println("Error:", err)
+		return
 	}
 }
 
@@ -57,7 +107,7 @@ func anonymizeImage(path string, file string, topCrop int, rightCrop int, bottom
 	// Create a new RGBA image with the same dimensions as the original
 	rgbaImg := image.NewRGBA(bounds)
 
-	// Define purple color
+	// Define purple color or any other color you want to use for the replacement, depending on your use case
 	purple := color.RGBA{R: 128, G: 0, B: 128, A: 255}
 
 	// Copy the image and add purple pixels to cropped areas

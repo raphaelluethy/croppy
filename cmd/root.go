@@ -19,6 +19,7 @@ var (
 	leftCrop   int
 	fileTypes  []string
 	path       string
+	useVideos  bool
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -34,12 +35,21 @@ var rootCmd = &cobra.Command{
 		fmt.Printf("  Left: %dpx\n", leftCrop)
 		fmt.Printf("  File types: %s\n", fileTypes)
 		fmt.Printf("  Path: %s\n", path)
+		fmt.Printf("  Use videos: %t\n", useVideos)
+
+		if useVideos {
+			fileTypes = []string{".mp4"}
+		}
 		fileMap, err := loader.LoadFiles(path, fileTypes)
 		if err != nil {
 			fmt.Printf("Error loading files: %s\n", err)
 			os.Exit(1)
 		}
-		anonymizer.RunAnonymize(fileMap, topCrop, rightCrop, bottomCrop, leftCrop)
+		if useVideos {
+			anonymizer.RunAnonymizeVideos(fileMap, topCrop, rightCrop, bottomCrop, leftCrop)
+		} else {
+			anonymizer.RunAnonymizeImages(fileMap, topCrop, rightCrop, bottomCrop, leftCrop)
+		}
 	},
 }
 
@@ -57,15 +67,7 @@ func init() {
 	rootCmd.Flags().IntVar(&rightCrop, "right", 0, "Distance from the right border to crop")
 	rootCmd.Flags().IntVar(&bottomCrop, "bottom", 0, "Distance from the bottom border to crop")
 	rootCmd.Flags().IntVar(&leftCrop, "left", 0, "Distance from the left border to crop")
-	rootCmd.Flags().StringSliceVar(&fileTypes, "file-types", []string{".jpg", ".png", ".jpeg", ".mp4"}, "File types to crop")
+	rootCmd.Flags().StringSliceVar(&fileTypes, "file-types", []string{".jpg", ".png", ".jpeg"}, "File types to crop")
 	rootCmd.Flags().StringVar(&path, "path", "./", "Path to crop")
-}
-
-func printFileMap(fileMap map[string][]string) {
-	for path, files := range fileMap {
-		fmt.Printf("Path: %s\n", path)
-		for _, file := range files {
-			fmt.Printf("  File: %s\n", file)
-		}
-	}
+	rootCmd.Flags().BoolVar(&useVideos, "videos", false, "Use videos instead of images")
 }
