@@ -2,6 +2,9 @@
 
 `croppy` is a command-line tool for batch cropping images based on specified parameters. It allows you to process multiple images at once, applying consistent cropping rules across your image set.
 
+> [!WARNING]
+> This program is still in development and is not yet fully functional. The images anonymizer is working, but the video anonymizer was not verified yet.
+
 ## Features
 
 - Batch processing of images or videos
