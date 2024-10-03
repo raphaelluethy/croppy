@@ -63,12 +63,3 @@ This command will process the MP4 video, applying the same cropping parameters t
 
 > [!WARNING]
 > this program assumes the images are in 25fps, if the fps is different you need to change it in the code
-
-## Video Processing Options
-
-- `--video`: Flag to enable video processing mode
-- `--input`: Path to the input video file
-- `--output`: Path for the output processed video file
-- `--fps`: Frames per second for processing (default: 30)
-- `--start`: Start time for processing (format: HH:MM:SS)
-- `--end`: End time for processing (format: HH:MM:SS)

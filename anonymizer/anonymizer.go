@@ -67,8 +67,8 @@ func repackVideo(randomName string, file string) {
 	cmd := exec.Command("ffmpeg", "-i", tempPath+randomName+"_%03d.png", "-c:v", "libx264", "-vf", "fps="+strconv.Itoa(fps), "-pix_fmt", "yuv420p", outPath+file)
 	err := cmd.Run()
 	if err != nil {
-		fmt.Println("Error:", err)
-		return
+		fmt.Printf("Error repacking video: %s\n", err)
+		os.Exit(1)
 	}
 }
 
